@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mein Finanzplaner</title>
+<style>
+:root{--bg:#0a0f1e;--card:#131a33;--card2:#1a2346;--tx:#eaeeff;--mut:#8b96c6;--ok:#2ee6a6;--bad:#ff5c8a;--warn:#ffc857;--acc:#8b6cff;--bd:#252f5c}
+*{box-sizing:border-box;margin:0}
+body{font:15px/1.45 "Segoe UI Variable","Segoe UI",system-ui,sans-serif;background:radial-gradient(1100px 520px at 8% -8%,#1c2a66 0,transparent 60%),var(--bg);color:var(--tx);min-height:100vh;padding:22px}
+.wrap{max-width:1180px;margin:auto;display:grid;gap:16px}
+h1{font-size:26px;letter-spacing:-.4px}h2{font-size:16px;margin-bottom:12px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.top small{color:var(--mut);display:block}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.kpi span{color:var(--mut);font-size:13px}.kpi b{display:block;font-size:26px;margin-top:4px;letter-spacing:-.5px}
+.g2{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.g2,.g3{grid-template-columns:1fr}}
+input,select,textarea,button{font:inherit;color:var(--tx)}
+input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;outline:none}
+input:focus,select:focus,textarea:focus,button:focus-visible{border-color:var(--acc);box-shadow:0 0 0 3px #8b6cff44}
+label{display:block;color:var(--mut);font-size:13px;margin:10px 0 4px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{cursor:pointer;border:1px solid var(--bd);background:var(--card2);border-radius:10px;padding:9px 14px}
+button:hover{border-color:var(--acc)}
+.btn{background:linear-gradient(135deg,var(--acc),#5b8cff);border:0;font-weight:600;width:100%;margin-top:14px;padding:12px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card2);padding:4px;border-radius:12px}
+.seg button{border:0;background:none;padding:9px}.seg .on.in{background:#2ee6a622;color:var(--ok)}.seg .on.out{background:#ff5c8a22;color:var(--bad)}
+.rule{border-color:var(--bd)}.rule.ok{border-color:#2ee6a655}.rule.bad{border-color:#ff5c8a88;background:#2a1530}
+.gauge{position:relative;height:16px;background:var(--card2);border-radius:99px;margin:16px 0 8px;overflow:visible}
+.gauge i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--ok);transition:width .5s}
+.rule.bad .gauge i{background:var(--bad)}
+.gauge u{position:absolute;top:-5px;bottom:-5px;width:3px;background:var(--warn);border-radius:2px}
+.gl{display:flex;justify-content:space-between;color:var(--mut);font-size:12px}
+.big{font-size:19px;font-weight:600}
+.warn{display:none;margin-top:12px;padding:10px 12px;border-radius:10px;background:#ff5c8a1f;border:1px solid #ff5c8a77;color:#ffc2d3;font-size:14px}
+.warn.show{display:block}
+.bars div{margin:10px 0}.bars p{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+.bar{height:10px;background:var(--card2);border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;border-radius:99px}
+.donut{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.ring{width:150px;height:150px;border-radius:50%;flex:none;position:relative}
+.ring:after{content:"";position:absolute;inset:26px;background:var(--card);border-radius:50%}
+.leg{flex:1;min-width:150px;font-size:14px}.leg p{display:flex;gap:8px;align-items:center;margin:4px 0}.leg i{width:10px;height:10px;border-radius:3px;flex:none}.leg span{margin-left:auto;color:var(--mut)}
+svg{width:100%;height:auto;display:block}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}
+th{color:var(--mut);font-weight:500;text-align:left;padding:8px;border-bottom:1px solid var(--bd)}
+td{padding:10px 8px;border-bottom:1px solid #1c2548;vertical-align:top}
+.chip{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;background:var(--card2);margin-top:3px}
+.n{color:var(--mut);font-size:13px}.r{text-align:right;white-space:nowrap;font-weight:600}
+.in{color:var(--ok)}.out{color:var(--bad)}
+.x{padding:4px 9px;color:var(--mut)}
+.empty{color:var(--mut);padding:18px 0;text-align:center}
+dialog{margin:auto;background:var(--card);color:var(--tx);border:1px solid #ff5c8a88;border-radius:16px;padding:22px;max-width:420px}
+dialog::backdrop{background:#000a}
+dialog .tools{margin-top:16px;justify-content:flex-end}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--bd);padding:10px 18px;border-radius:12px;display:none}
+.set{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:end}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="top">
+  <div><h1>Mein Finanzplaner</h1><small id="dt"></small></div>
+  <div class="tools">
+    <select id="mon" style="width:auto" aria-label="Zeitraum"></select>
+    <button id="exp">Backup speichern</button>
+    <button id="imp">Backup laden</button>
+    <input type="file" id="file" accept=".json" hidden>
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="card kpi"><span>Guthaben heute</span><b id="k1"></b></div>
+  <div class="card kpi"><span>Einnahmen im Zeitraum</span><b id="k2" class="in"></b></div>
+  <div class="card kpi"><span>Ausgaben im Zeitraum</span><b id="k3" class="out"></b></div>
+  <div class="card kpi"><span>Übrig im Zeitraum</span><b id="k4"></b></div>
+</div>
+
+<div class="card rule" id="rule">
+  <h2>30-%-Regel für heute</h2>
+  <div class="big" id="rt"></div>
+  <div class="gauge"><i id="rf"></i><u id="rm"></u></div>
+  <div class="gl"><span>0 €</span><span id="rl">Guthaben vom Vortag</span></div>
+  <p class="n" id="rd" style="margin-top:10px"></p>
+</div>
+
+<div class="g2">
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <h2>Neuer Eintrag</h2>
+      <form id="f">
+        <div class="seg" id="seg"><button type="button" data-t="out" class="on out">Ausgabe</button><button type="button" data-t="in" class="in">Einnahme</button></div>
+        <div class="row">
+          <div><label for="amt">Betrag in €</label><input id="amt" type="number" step="0.01" min="0.01" required placeholder="0,00"></div>
+          <div><label for="date">Datum</label><input id="date" type="date" required></div>
+        </div>
+        <label for="cat">Kategorie</label><select id="cat"></select>
+        <label for="why">Wofür?</label><input id="why" required maxlength="80" placeholder="z. B. Wocheneinkauf">
+        <label for="note">Notiz (optional)</label><textarea id="note" rows="2" maxlength="300" placeholder="Was du dir dazu merken willst"></textarea>
+        <div class="warn" id="warn"></div>
+        <button class="btn" type="submit">Eintrag speichern</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>Einstellungen</h2>
+      <div class="set">
+        <div><label for="st">Startguthaben in €</label><input id="st" type="number" step="0.01"></div>
+        <div><label for="pc">Mindest-%</label><input id="pc" type="number" min="0" max="100"></div>
+      </div>
+      <p class="n" style="margin-top:8px">Das Startguthaben ist das Geld, das du hattest, bevor du den ersten Eintrag gemacht hast.</p>
+    </div>
+  </div>
+
+  <div style="display:grid;gap:16px;align-content:start">
+    <div class="card"><h2>Guthaben im Verlauf</h2><div id="line"></div></div>
+    <div class="g3">
+      <div class="card"><h2>Einnahmen und Ausgaben</h2><div class="bars" id="bars"></div></div>
+      <div class="card"><h2>Wofür das Geld weg ist</h2><div class="donut"><div class="ring" id="ring"></div><div class="leg" id="leg"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Alle Einträge</h2>
+  <div class="tw"><table><thead><tr><th>Datum</th><th>Wofür</th><th>Notiz</th><th class="r">Betrag</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+</div>
+</div>
+
+<dialog id="dlg"><h2 style="color:var(--bad)">Achtung: unter deiner Grenze</h2><p id="dm"></p>
+  <div class="tools"><button id="no">Abbrechen</button><button id="yes" style="border-color:var(--bad)">Trotzdem speichern</button></div>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s), K='finanzplaner_v1';
+const CAT={out:['Essen & Trinken','Wohnen','Transport','Freizeit','Shopping','Gesundheit','Abos','Sparen','Sonstiges'],in:['Gehalt','Nebenjob','Geschenk','Rückerstattung','Sonstiges']};
+const COL=['#8b6cff','#2ee6a6','#ff5c8a','#ffc857','#38bdf8','#fb923c','#a3e635','#f472b6','#94a3b8'];
+let S={start:0,pct:30,tx:[]},type='out',pending=null;
+try{const r=localStorage.getItem(K);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){toast('Speichern im Browser nicht möglich – bitte Backup nutzen')}};
+const eur=n=>n.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const fd=d=>d.split('-').reverse().join('.');
+const sgn=t=>t.type==='in'?t.amt:-t.amt;
+const bal=d=>S.start+S.tx.filter(t=>t.date<=d).reduce((a,t)=>a+sgn(t),0);  // Stand am Ende des Tages d
+const prev=d=>S.start+S.tx.filter(t=>t.date<d).reduce((a,t)=>a+sgn(t),0);   // Stand am Ende des Vortags
+const floor=d=>Math.max(0,prev(d)*S.pct/100);
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._);t._=setTimeout(()=>t.style.display='none',2600)}
+
+// Prüft, ob eine Ausgabe die Mindestgrenze unterschreitet
+function check(t){
+  if(t.type!=='out'||!(t.amt>0)||!t.date)return '';
+  const after=bal(t.date)-t.amt, fl=floor(t.date), pv=prev(t.date);
+  if(after>=fl)return '';
+  const p=pv>0?Math.round(after/pv*100):0;
+  return `Nach dieser Ausgabe hättest du am ${fd(t.date)} nur noch <b>${eur(after)}</b> (${p} % vom Vortag). Mindestens <b>${eur(fl)}</b> (${S.pct} %) sollten bleiben – dir fehlen <b>${eur(fl-after)}</b>.`;
+}
+function liveWarn(){
+  const w=check({type,amt:+$('#amt').value,date:$('#date').value}),e=$('#warn');
+  e.innerHTML=w?'⚠ '+w:'';e.classList.toggle('show',!!w);
+}
+
+function setType(t){
+  type=t;
+  document.querySelectorAll('#seg button').forEach(b=>b.className=b.dataset.t===t?'on '+t:b.dataset.t);
+  $('#cat').innerHTML=CAT[t].map(c=>`<option>${c}</option>`).join('');
+  liveWarn();
+}
+
+function months(){
+  const set=new Set(S.tx.map(t=>t.date.slice(0,7)));set.add(today().slice(0,7));
+  const cur=$('#mon').value||'all';
+  $('#mon').innerHTML='<option value="all">Gesamter Zeitraum</option>'+[...set].sort().reverse().map(m=>{
+    const [y,mm]=m.split('-');return `<option value="${m}">${new Date(y,mm-1).toLocaleDateString('de-DE',{month:'long',year:'numeric'})}</option>`}).join('');
+  $('#mon').value=[...set,'all'].includes(cur)?cur:'all';
+}
+
+function render(){
+  const td=today(),m=$('#mon').value||'all';
+  const list=S.tx.filter(t=>m==='all'||t.date.startsWith(m)).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  const inc=list.filter(t=>t.type==='in').reduce((a,t)=>a+t.amt,0), out=list.filter(t=>t.type==='out').reduce((a,t)=>a+t.amt,0);
+  $('#dt').textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const cur=bal(td);
+  $('#k1').textContent=eur(cur);$('#k1').className=cur<0?'out':'';
+  $('#k2').textContent=eur(inc);$('#k3').textContent=eur(out);
+  const rest=inc-out;$('#k4').textContent=eur(rest);$('#k4').className=rest<0?'out':'in';
+
+  // 30%-Regel für heute
+  const pv=prev(td),fl=floor(td),free=cur-fl,ok=free>=0,r=$('#rule');
+  r.className='card rule '+(ok?'ok':'bad');
+  $('#rt').innerHTML=ok?`Du kannst heute noch <span class="in">${eur(free)}</span> ausgeben`:`<span class="out">Du bist ${eur(-free)} unter deiner Grenze</span>`;
+  const scale=Math.max(pv,cur,1)*1.05;
+  $('#rf').style.width=Math.max(0,Math.min(100,cur/scale*100))+'%';
+  $('#rm').style.left=Math.min(100,fl/scale*100)+'%';
+  $('#rl').textContent='Guthaben vom Vortag: '+eur(pv);
+  $('#rd').innerHTML=`Die gelbe Linie ist deine Mindestgrenze: ${S.pct} % von gestern = <b>${eur(fl)}</b>. Aktuell hast du <b>${eur(cur)}</b>${pv>0?` (${Math.round(cur/pv*100)} % vom Vortag)`:''}.`;
+
+  // Balken
+  const mx=Math.max(inc,out,Math.abs(rest),1);
+  const bar=(l,v,c)=>`<div><p><span>${l}</span><b>${eur(v)}</b></p><div class="bar"><i style="width:${Math.abs(v)/mx*100}%;background:${c}"></i></div></div>`;
+  $('#bars').innerHTML=bar('Einnahmen',inc,'var(--ok)')+bar('Ausgaben',out,'var(--bad)')+bar('Übrig',rest,rest<0?'var(--warn)':'var(--acc)');
+
+  // Kreis nach Kategorie
+  const by={};list.filter(t=>t.type==='out').forEach(t=>by[t.cat]=(by[t.cat]||0)+t.amt);
+  const ent=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+  if(!ent.length){$('#ring').style.background='var(--card2)';$('#leg').innerHTML='<p class="n">Noch keine Ausgaben.</p>'}
+  else{let a=0;const seg=ent.map(([c,v],i)=>{const s=a;a+=v/out*100;return `${COL[i%COL.length]} ${s}% ${a}%`});
+    $('#ring').style.background=`conic-gradient(${seg.join(',')})`;
+    $('#leg').innerHTML=ent.map(([c,v],i)=>`<p><i style="background:${COL[i%COL.length]}"></i>${esc(c)}<span>${eur(v)} · ${Math.round(v/out*100)} %</span></p>`).join('')}
+
+  // Verlauf
+  let ds=[...new Set([...list.map(t=>t.date),td])].sort();
+  if(m==='all'&&S.tx.length)ds=[...new Set([...S.tx.map(t=>t.date),td])].sort();
+  if(ds.length<2)$('#line').innerHTML='<p class="empty">Sobald du an zwei verschiedenen Tagen etwas einträgst, siehst du hier den Verlauf.</p>';
+  else{
+    const v=ds.map(d=>bal(d)),lo=Math.min(0,...v),hi=Math.max(...v,1),W=600,H=190,P=8;
+    const X=i=>P+i*(W-2*P)/(ds.length-1),Y=x=>H-P-(x-lo)/(hi-lo||1)*(H-2*P-14);
+    const pts=v.map((x,i)=>`${X(i).toFixed(1)},${Y(x).toFixed(1)}`).join(' ');
+    $('#line').innerHTML=`<svg viewBox="0 0 ${W} ${H+16}"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b6cff" stop-opacity=".45"/><stop offset="1" stop-color="#8b6cff" stop-opacity="0"/></linearGradient></defs>
+    <line x1="0" x2="${W}" y1="${Y(0)}" y2="${Y(0)}" stroke="#252f5c" stroke-dasharray="4"/>
+    <polygon points="${X(0)},${H-P} ${pts} ${X(ds.length-1)},${H-P}" fill="url(#g)"/>
+    <polyline points="${pts}" fill="none" stroke="#8b6cff" stroke-width="3" stroke-linejoin="round"/>
+    ${v.map((x,i)=>`<circle cx="${X(i)}" cy="${Y(x)}" r="3.5" fill="${x<0?'#ff5c8a':'#2ee6a6'}"><title>${fd(ds[i])}: ${eur(x)}</title></circle>`).join('')}
+    <text x="${P}" y="${H+12}" fill="#8b96c6" font-size="12">${fd(ds[0])}</text><text x="${W-P}" y="${H+12}" fill="#8b96c6" font-size="12" text-anchor="end">${fd(ds[ds.length-1])}</text></svg>`}
+
+  // Tabelle
+  $('#tb').innerHTML=list.length?list.map(t=>`<tr><td>${fd(t.date)}</td><td>${esc(t.why)}<br><span class="chip">${esc(t.cat)}</span></td><td class="n">${esc(t.note||'')}</td><td class="r ${t.type}">${t.type==='in'?'+':'−'}${eur(t.amt)}</td><td><button class="x" data-id="${t.id}" title="Eintrag löschen" aria-label="Eintrag löschen">✕</button></td></tr>`).join(''):'<tr><td colspan="5" class="empty">Noch keine Einträge. Trag links deine erste Einnahme oder Ausgabe ein.</td></tr>';
+}
+
+function add(t){S.tx.push(t);save();months();$('#amt').value='';$('#why').value='';$('#note').value='';liveWarn();render();toast(t.type==='in'?'Einnahme gespeichert':'Ausgabe gespeichert')}
+
+$('#f').onsubmit=e=>{
+  e.preventDefault();
+  const t={id:Date.now(),type,date:$('#date').value,amt:Math.round(+$('#amt').value*100)/100,cat:$('#cat').value,why:$('#why').value.trim(),note:$('#note').value.trim()};
+  if(!(t.amt>0)||!t.why)return;
+  const w=check(t);
+  if(w){pending=t;$('#dm').innerHTML=w;$('#dlg').showModal()}else add(t);
+};
+$('#yes').onclick=()=>{$('#dlg').close();if(pending)add(pending);pending=null};
+$('#no').onclick=()=>{$('#dlg').close();pending=null};
+$('#seg').onclick=e=>{const b=e.target.closest('button');if(b)setType(b.dataset.t)};
+['amt','date'].forEach(i=>$('#'+i).oninput=liveWarn);
+$('#mon').onchange=render;
+$('#tb').onclick=e=>{const b=e.target.closest('.x');if(b&&confirm('Diesen Eintrag löschen?')){S.tx=S.tx.filter(t=>t.id!=b.dataset.id);save();months();render();liveWarn()}};
+$('#st').onchange=()=>{S.start=+$('#st').value||0;save();render();liveWarn()};
+$('#pc').onchange=()=>{S.pct=Math.min(100,Math.max(0,+$('#pc').value||0));$('#pc').value=S.pct;save();render();liveWarn()};
+$('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='finanzplaner-backup-'+today()+'.json';a.click();toast('Backup heruntergeladen')};
+$('#imp').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tx))throw 0;S=Object.assign({start:0,pct:30,tx:[]},d);save();$('#st').value=S.start;$('#pc').value=S.pct;months();render();toast('Backup geladen')}catch(x){toast('Diese Datei ist kein gültiges Backup')}};r.readAsText(f);e.target.value=''};
+
+$('#date').value=today();$('#st').value=S.start;$('#pc').value=S.pct;
+setType('out');months();render();
+</script>
+</body>
+</html>
